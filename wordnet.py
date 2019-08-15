@@ -1,6 +1,9 @@
 from nltk.corpus import wordnet as wn
 from nltk import word_tokenize, pos_tag
 
+from WSD import WSD
+from WSD import FirstSynset
+
 class WordNet:
 
     """
@@ -12,15 +15,16 @@ class WordNet:
     Methods
     -------
 
+    penn_to_wn(tag)
+        Convert between a Penn Treebank tag to a simplified Wordnet tag. 
+
+
     """
 
     def penn_to_wn(self, tag):
         """ 
         Convert between a Penn Treebank tag to a simplified Wordnet tag. 
 
-        nltk.pos_tag function returns tags on notation of Penn Treebank.
-        https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html
-        
         Parameters
         ----------
 
@@ -28,6 +32,9 @@ class WordNet:
             The tag that will be converted for WordNet tag format.
 
         """
+
+        #nltk.pos_tag function returns tags on notation of Penn Treebank.
+        #https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html
 
         if tag.startswith('N'):
             return 'n'
@@ -56,11 +63,16 @@ class WordNet:
 
         """
 
+        wsd = FirstSynset()
+
         wn_tag = self.penn_to_wn(tag)
         if wn_tag is None:
             return None
+
         try:
-            return wn.synsets(word, wn_tag)[0]
+            synsets = wn.synsets(word, wn_tag)
+            wsd_synset = wsd.disambiguation(synsets)
+            return wsd_synset
         except:
             return None
     
@@ -72,13 +84,21 @@ class WordNet:
         This algorithm was proposed by Mihalcea et al.
         Paper: https://pdfs.semanticscholar.org/1374/617e135eaa772e52c9a2e8253f49483676d6.pdf
 
-        Implementation based on this post:
-        https://nlpforhackers.io/wordnet-sentence-similarity/
-
         Parameters
         ----------
 
+        sentence1 : str
+            sentence1 to be compared to sentence2
+                
+        sentence2 : str
+            sentence2 to be compared to sentence1
+
         """
+
+        #Implementation based on this post:
+        #https://nlpforhackers.io/wordnet-sentence-similarity/
+
+
         # Tokenize and tag
         sentence1 = pos_tag(word_tokenize(sentence1))
         sentence2 = pos_tag(word_tokenize(sentence2))
